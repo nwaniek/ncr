@@ -1,5 +1,5 @@
-ncr - Neural Computation Repository and Resources
-=================================================
+ncr - Neural and Natural Computation Repository
+===============================================
 
 This repository is a collection of C++ header only files. The files contain
 implementations of various basic functions and data structures that are required
@@ -77,7 +77,7 @@ the following (bibtex) snippet:
 
     @Misc{ncr,
         author =   {Nicolai Waniek},
-        title =    {{NCR}: {Neural Computation Repository and Resources}},
+        title =    {{NCR}: {Neural and Natural Computation Repository}},
         howpublished = {\url{https://github.com/nwaniek/ncr}}
         year = {2021--2022}
     }
