@@ -74,6 +74,7 @@ If none of my existing papers fits your bill, then you could use for instance
 the following (bibtex) snippet:
 
 .. code::
+
     @Misc{ncr,
         author =   {Nicolai Waniek},
         title =    {{NCR}: {Neural Computation Repository and Resources}},
@@ -95,6 +96,7 @@ The following gives a brief overview of the 'core' headers in ncr. They can be
 found in the folder `include/ncr`.
 
 .. code::
+
     ncr_algorithm  - certain algorithms to work with ncr data structures
     ncr_automata   - header file for alphabets, strings, and finite state machines
     ncr_bayes      - Bayesian math, structures, and functions, e.g. particle filters
@@ -160,6 +162,7 @@ incomplete, unstable, and well experimental. Recommendation: Don't use them.
 They can be found in the folder `include/ncr/experimental`.
 
 .. code::
+
     ncr_glutils    - Utilities to work with OpenGL
     ncr_shader     - Shader stuff for OpenGL
 
