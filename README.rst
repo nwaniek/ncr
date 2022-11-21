@@ -86,7 +86,7 @@ There might be a proper paper, which describes the software in detail, to cite
 in the future. So, stay tuned.
 
 If you want to donate to this project, get in touch with me. Alternatively, tell
-your favorite funding agency or company to (continue) fund my research.
+your favorite funding agency or company to (continue to) fund my research.
 
 
 Overview
