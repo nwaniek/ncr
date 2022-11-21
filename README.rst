@@ -103,7 +103,7 @@ found in the folder `include/ncr`.
     ncr_bitset     - compile-time fixed as well as run-time dynamic size bitset
                      similar to std::bitset
     ncr_chrono     - time measurement functions
-    ncr_cmd        - a simple command (file) parser
+    ncr_cmd        - a simple command (file) parser inspired by id's Quake 3 Arena.
     ncr_cvar       - A configuration variable system inspired by id's Quake 3 Arena.
     ncr_filesystem - very basic filesystem utilities
     ncr_geometry   - math operations for geometry processing. Don't use this.
