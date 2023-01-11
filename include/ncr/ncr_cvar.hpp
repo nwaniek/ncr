@@ -34,6 +34,7 @@
 #ifdef NCR_CVAR_ENABLE_HDF5
 #include <highfive/bits/H5Annotate_traits.hpp>
 #include <highfive/H5DataType.hpp>
+#include <highfive/H5DataSpace.hpp>
 #include <highfive/H5Group.hpp>
 #endif
 
