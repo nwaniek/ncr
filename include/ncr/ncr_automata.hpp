@@ -254,7 +254,6 @@ copy_str(const basic_string_t &src, basic_string_t &dest)
 }
 
 
-
 /*
  * struct basic_alphabet - A basic alphabet.
  *
@@ -281,6 +280,7 @@ struct basic_alphabet {
 	const symbol *
 		symbols;
 };
+
 
 /*
  * concrete definition of a binary alphabet. First, the definition of the
@@ -2409,6 +2409,7 @@ fsm_encode_genome(
 	result.transitions.resize(transitions.size());
 
 	// build a lookup-table for the IDs if necessary
+	// TODO: if valid_state_ids is false, this can most likely be skipped
 	size_t *id_lookup_table;
 	size_t max_id = 0;
 	for (auto &s: states)

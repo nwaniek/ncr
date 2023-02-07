@@ -1,0 +1,9 @@
+A*-GED: Riesen et al. 2013
+DF-GED: Abu-Aisheh et al. 2015
+CSI_GED: Gouda et al. 2016
+BSS_GED: Chen et al. 2018
+
+
+See also: ~/src/libraries/networkx/networkx/algorithms/similarity.py
+See also: ~/src/libraries/gedlib
+See also: ~/src/libraries/graph-lib

@@ -10,5 +10,9 @@
 
 namespace ncr {
 
+// Definitions of vertex and edge
+
+// A*
+
 
 }
