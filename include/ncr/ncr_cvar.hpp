@@ -54,6 +54,22 @@ namespace ncr {
 	_(CVT_DOUBLE,   double,           double,   d) \
 	_(CVT_STRING,   std::string,      string,   s)
 
+// TODO: maybe merge this with the table above or automatically extract proper
+//       data types
+#ifdef NCR_CVAR_ENABLE_HDF5
+// due to the mismatch in how HighFive handles bools, this needs to be done
+// explicitly ...
+#define NCR_CVAR_HDF5_CONVERTERS(_)                       \
+	_(CVT_BOOL,     HighFive::create_enum_boolean)      \
+    _(CVT_CHAR,     HighFive::create_datatype<char>)      \
+	_(CVT_INT,      HighFive::create_datatype<int>)       \
+	_(CVT_UNSIGNED, HighFive::create_datatype<unsigned>)  \
+	_(CVT_FLOAT,    HighFive::create_datatype<float>)     \
+	_(CVT_DOUBLE,   HighFive::create_datatype<double>)    \
+	_(CVT_STRING,   HighFive::create_datatype<std::string>)
+
+#endif
+
 
 // additional types that don't explicitly exist in CVT, but will get mapped to
 // other fields
@@ -402,16 +418,22 @@ NCR_CVAR_TYPE_LIST(BASIC_TYPE_OP)
 
 
 #ifdef NCR_CVAR_ENABLE_HDF5
-// convert CVAR to H5 Type
-	#define CVAR_CPP_TYPE(CVT_TYPE, CPP_TYPE, ...) \
+
+
+	// convert CVAR to H5 Type
+	#define CVAR_TO_HDF_DTYPE(CVT_TYPE, CONVERSION_FN, ...) \
 		case cvar_type::CVT_TYPE: { \
-			return HighFive::create_datatype<CPP_TYPE>(); \
+			return CONVERSION_FN(); \
 		}
 
+	// Unfortunately due to the poor and only slowly improving bool support in
+	// HighFive, we need to manually do stuff here. Essentially we don't support
+	// boolean vectors at the moment.
 	#define CVAR_VECTOR_CONTAINED_CPP_TYPE(CVT_TYPE, _1, _2, _3, CPP_TYPE) \
 		case cvar_type::CVT_TYPE: { \
 			return HighFive::create_datatype<CPP_TYPE>(); \
 		}
+
 
 	inline HighFive::DataType
 	cvar::create_highfive_datatype() const
@@ -428,7 +450,7 @@ NCR_CVAR_TYPE_LIST(BASIC_TYPE_OP)
 		else {
 			switch (this->type)
 			{
-				NCR_CVAR_TYPE_LIST(CVAR_CPP_TYPE)
+				NCR_CVAR_HDF5_CONVERTERS(CVAR_TO_HDF_DTYPE)
 			default:
 				// this should essentially lead to an exception in hdf5
 				return HighFive::DataType();
@@ -486,46 +508,24 @@ NCR_CVAR_TYPE_LIST(BASIC_TYPE_OP)
 		}
 		else {
 
-			// cannot use X-Macro because HighFive doesn't support bool (which
-			// is checked during compile time)... fuckers.
-
+			// TODO: do we really need to create all these data types, or
+			// wouldn't it be sufficient to create all datatypes once and then
+			// reference them?
 			auto dtype = this->create_highfive_datatype();
 			HighFive::Attribute attr = group.createAttribute(this->name, HighFive::DataSpace(HighFive::DataSpace::dataspace_scalar), dtype);
 
-			if (this->type == cvar_type::CVT_BOOL) {
-				int val = this->get_value<bool>();
-				attr.write(val);
-			}
-			else {
-				switch (this->type) {
-				case cvar_type::CVT_CHAR:
-					attr.write(this->value.c);
-					break;
+			#define GET_V(CVT_TYPE, CPP_TYPE, ...) \
+				case cvar_type::CVT_TYPE: { \
+					attr.write(this->get_value<CPP_TYPE>()); \
+					break; \
+				}
 
-				case cvar_type::CVT_INT:
-					attr.write(this->value.i);
-					break;
-
-				case cvar_type::CVT_UNSIGNED:
-					attr.write(this->value.u);
-					break;
-
-				case cvar_type::CVT_FLOAT:
-					attr.write(this->value.f);
-					break;
-
-				case cvar_type::CVT_DOUBLE:
-					attr.write(this->value.d);
-					break;
-
-				case cvar_type::CVT_STRING:
-					attr.write(this->value.s);
-					break;
+			switch (this->type) {
+				NCR_CVAR_TYPE_LIST(GET_V)
 
 				default:
 					log_error("write_hdf5_attribute not implemented for type ", CVT_TYPE_NAMES[static_cast<unsigned>(this->type)], ".\n");
 					break;
-				}
 			}
 		}
 	}
@@ -1199,3 +1199,4 @@ NCR_CVAR_TYPE_LIST(VIEW_ALIAS)
 #undef NCR_CVAR_TYPE_LIST
 
 } // namespace ncr::cvar
+
