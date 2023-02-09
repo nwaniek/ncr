@@ -8,6 +8,7 @@
  */
 #pragma once
 
+#include <sys/stat.h>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -31,7 +32,6 @@ test(filesystem_status s)
 {
 	return std::underlying_type<filesystem_status>::type(s);
 }
-
 
 /*
  * read_file - read a whole file into a string.
@@ -68,5 +68,25 @@ mkfilename(std::string basename, std::string ext = ".cfg")
 	return os.str();
 }
 
+
+// TODO: move the above into the filesystem namespace as well
+namespace filesystem {
+
+/*
+ * exists - test if a file exists in the filesystem or not
+ *
+ * This is the fastest way to determine if a file exists or not. See
+ * https://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exists-using-standard-c-c11-14-17-c
+ * for more discussion.
+ */
+inline bool
+exists(const std::string &filename)
+{
+	struct stat buffer;
+	return stat(filename.c_str(), &buffer) == 0;
+}
+
+
+} // ncr::filesystem
 
 } // ncr::
