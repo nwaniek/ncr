@@ -2604,6 +2604,11 @@ fsm_init(finite_state_machine &fsm)
 inline void
 fsm_free(finite_state_machine &fsm)
 {
+	if (!fsm.initialized) {
+		log_error("fsm_free called on an un-initialized FSM!\n");
+		return;
+	}
+
 	for (size_t i = 0; i < fsm.states.size(); ++i) {
 		delete fsm.states[i];
 		fsm.states[i] = nullptr;
@@ -2612,6 +2617,8 @@ fsm_free(finite_state_machine &fsm)
 		delete fsm.transitions[i];
 		fsm.transitions[i] = nullptr;
 	}
+	fsm.transition_table.clear();
+	fsm.initialized = false;
 }
 
 
