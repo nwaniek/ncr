@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <type_traits>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include <random>
 #include <ostream>
@@ -625,6 +626,8 @@ struct fsm_genome
 struct mutation_rates
 {
 	// state mutation rates
+	double delete_state               = 0.04;
+	double create_state               = 0.04;
 	double modify_state_start         = 0.01;
 	double modify_state_accepting     = 0.04;
 
@@ -942,19 +945,47 @@ mutate_states(
 		const fsm_genome &genome,
 		const mutation_rates &mr,
 		fsm_genome &target,
-		std::mt19937_64 *rng)
+		std::vector<transition_gene> &target_transitions,
+		std::mt19937_64 *rng,
+		// added 2023-02-14
+		size_t max_nstates = 3)
 {
 	std::vector<size_t> start_ids;
 	size_t n_accepting_states = 0;
 
-	// we know the number of states, so reserve this amount of states.
-	target.states.reserve(genome.states.size());
+	// we don't know the final number of target states, because we might delete
+	// or insert a state. hence, just clear the vector of states in the target.
+	target.states.clear();
+	target_transitions.clear();
 
-	for (size_t i = 0; i < genome.states.size(); ++i) {
+	// OLD CODE (as of before 2023-02-14): we know the number of states, so
+	// reserve this amount of states.
+	// target.states.reserve(genome.states.size());
 
-		auto state = genome.states[i];
+	std::vector<size_t> removed_states;
+	std::unordered_map<size_t, size_t> state_id_map;
 
-		// mutate state
+	size_t state_counter = 0;
+	for (size_t origin_i = 0; origin_i < genome.states.size(); ++origin_i) {
+
+		// mostly copy, but update the state ID
+		state_gene state = {
+			.id    = target.states.size(),
+			.label = genome.states[origin_i].label,
+			.flag  = genome.states[origin_i].flag};
+
+		// drop state?
+		if (unif_random(rng) < mr.delete_state) {
+			// if this state gets dropped, we need to remove the transitions
+			// from/to it. we also need to modify the transition table to
+			// reflect that the IDs of all other states changed. We will do this
+			// later, but for this we need to track the removed states
+			log_verbose("Removing state", origin_i, "\n");
+			removed_states.push_back(origin_i);
+			continue;
+		}
+
+		// mutate state?
 		if (unif_random(rng) < mr.modify_state_start)
 			state.flag ^= automaton_state_flags::IS_START;
 
@@ -964,7 +995,7 @@ mutate_states(
 		// record if this is a start state. Needed for later to randomly select
 		// a single start state
 		if (test(state.flag & automaton_state_flags::IS_START))
-			start_ids.push_back(i);
+			start_ids.push_back(state_counter);
 
 		// simply cound how many accepting states there are
 		if (test(state.flag & automaton_state_flags::IS_FINAL))
@@ -972,7 +1003,70 @@ mutate_states(
 
 		// emplace to avoid copy constructor
 		target.states.emplace_back(state);
+
+		// keep track of the state IDs in the new genome
+		state_id_map[origin_i] = target.states.size() - 1;
+
+		// increment the new state counter
+		++state_counter;
 	}
+
+	// maybe add a new state, especially if there's no state to begin with
+	if (target.states.size() < max_nstates) {
+		if ((target.states.size() == 0) || unif_random(rng) < mr.create_state) {
+
+			// TODO: this is taken from random_genome
+			size_t state_id = target.states.size();
+			char label = std::to_string(state_id)[0];
+			automaton_state_flags flag = automaton_state_flags::DEFAULT;
+			state_gene state = {.id = state_id, .label = label, .flag = flag};
+
+			// modify state flag accordingly
+			if (unif_random(rng) < mr.modify_state_start)
+				state.flag ^= automaton_state_flags::IS_START;
+
+			if (unif_random(rng) < mr.modify_state_accepting)
+				state.flag ^= automaton_state_flags::IS_FINAL;
+
+			if (test(state.flag & automaton_state_flags::IS_START))
+				start_ids.push_back(state_counter);
+
+			// simply cound how many accepting states there are
+			if (test(state.flag & automaton_state_flags::IS_FINAL))
+				n_accepting_states += 1;
+
+			// append a new state to the target genome
+			target.states.emplace_back(state);
+		}
+	}
+
+	// go over each transition, if it's start or end is in the list of dropped
+	// states, don't further process it. otherwise, check the state ID map to
+	// get the proper index. this will fix the transitions in case states got
+	// dropped, and rewrite the state IDs
+	for (auto &t: genome.transitions) {
+		if (contains(removed_states, t.state_from) or contains(removed_states, t.state_to))
+			continue;
+
+		// TODO: return a failure state when the ID is missing
+		if (state_id_map.count(t.state_from) == 0) {
+			log_error("mutate_state: state_id_map missing source key ", t.state_from, "\n");
+			continue;
+		}
+		if (state_id_map.count(t.state_to) == 0) {
+			log_error("mutate_state: state_id_map missing target key ", t.state_to, "\n");
+			continue;
+		}
+
+		// append the packaged transition to the list of transitions
+		size_t source_id = state_id_map[t.state_from];
+		size_t target_id = state_id_map[t.state_to];
+		target_transitions.push_back({.state_from   = source_id,
+									  .symbol_read  = t.symbol_read,
+									  .state_to     = target_id,
+									  .symbol_write = t.symbol_write});
+	}
+
 
 	// determine if there's a start state for the automaton
 	if (start_ids.size() == 0) {
@@ -1012,8 +1106,8 @@ mutate_states(
  * Note that symbol_read and symbol_write are restricted to real input symbols
  */
 #define TRANSITION_MUTATION_LIST \
-	X(state_from,   unif_random(rng) < mr.modify_transition_source,   0ul, target.states.size() - 1) \
-	X(state_to,     unif_random(rng) < mr.modify_transition_target,   0ul, target.states.size() - 1) \
+	X(state_from,   unif_random(rng) < mr.modify_transition_source,   0ul, nstates - 1) \
+	X(state_to,     unif_random(rng) < mr.modify_transition_target,   0ul, nstates - 1) \
 	X(symbol_read , unif_random(rng) < mr.modify_transition_symbol,   0ul, alphabet.n_input_symbols - 1)   \
 	X(symbol_write, unif_random(rng) < mr.modify_transition_emission, 0ul, alphabet.n_input_symbols - 1)
 
@@ -1022,13 +1116,14 @@ mutate_states(
  */
 inline void
 mutate_transitions(
-		const fsm_genome &genome,
+		const std::vector<transition_gene> &origin,
 		const mutation_rates &mr,
 		const basic_alphabet &alphabet,
-		fsm_genome &target,
+		const size_t nstates,
+		std::vector<transition_gene> &target,
 		std::mt19937_64 *rng)
 {
-	for (auto _t: genome.transitions) {
+	for (auto _t: origin) {
 		// drop this transition?
 		if (unif_random(rng) < mr.drop_transition)
 			continue;
@@ -1042,7 +1137,7 @@ mutate_transitions(
 			TRANSITION_MUTATION_LIST
 		#undef X
 
-		target.transitions.emplace_back(std::move(t));
+		target.emplace_back(std::move(t));
 	}
 
 	// create a novel transition?
@@ -1055,7 +1150,7 @@ mutate_transitions(
 		#undef X
 
 		if (!contains(target, t))
-			target.transitions.emplace_back(std::move(t));
+			target.emplace_back(std::move(t));
 	}
 }
 
@@ -1105,12 +1200,22 @@ mutate_genome(
 		const fsm_genome &genome,
 		const mutation_rates &mr,
 		const basic_alphabet &alphabet,
-		std::mt19937_64 *rng)
+		std::mt19937_64 *rng,
+		size_t max_nstates = 3)
 {
 	fsm_genome target;
-	// first mutate states and transitions
-	mutate_states(genome, mr, target, rng);
-	mutate_transitions(genome, mr, alphabet, target, rng);
+
+	// NOTE: transitions are stored in a vector<transition_gene>, where each
+	// transition gene is a POD with four size_ts. We need to get a temporary
+	// copy of this vector during mutate_state. Reason is that states might get
+	// dropped, which leads to a change in the transitions themselves. If not
+	// state got dropped, then tmp_transitions = genome.transitions
+	std::vector<transition_gene> tmp_transitions;
+
+	// first mutate states, then the transitions. TODO: think if we want to
+	// merge this.
+	mutate_states(genome, mr, target, tmp_transitions, rng, max_nstates);
+	mutate_transitions(tmp_transitions, mr, alphabet, target.states.size(), target.transitions, rng);
 
 	// rewrite the genome labels so that they match the id
 	genome_rewrite_labels(target);
@@ -1145,7 +1250,8 @@ random_genome(
 #endif
 
 	for (size_t i = 0; i < n_states; ++i) {
-		// TODO: generating the label this way is hacky, needs improvement
+		// TODO: generating the label this way is hacky, needs improvement. If
+		//       this changes, also adapt mutate_states accordingly
 		char label = std::to_string(i)[0];
 
 		automaton_state_flags flag = i == 0 ? automaton_state_flags::IS_START : automaton_state_flags::DEFAULT;
