@@ -171,11 +171,12 @@ NCR_CVAR_VECTOR_TYPE_LIST(NCR_CVT_TO_CPP_SPECIALIZATION)
  * status codes returned by cvar_* functions
  */
 enum struct cvar_status : unsigned {
-	success            = 0,
-	is_nullptr         = 1,
-	conversion_failure = 2,
-	unknown_cvar_type  = 3,
-	type_mismatch      = 4,
+	success                = 0,
+	is_nullptr             = 1,
+	conversion_failure     = 2,
+	unknown_cvar_type      = 3,
+	type_mismatch          = 4,
+	insufficient_arguments = 5,
 };
 
 
