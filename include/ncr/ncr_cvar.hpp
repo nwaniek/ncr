@@ -124,6 +124,8 @@ cvar_type_is_vector(cvar_type type)
 	return (type == cvar_type::CVT_INTV)
 		|| (type == cvar_type::CVT_UNSIGNEDV)
 		|| (type == cvar_type::CVT_FLOATV)
+		|| (type == cvar_type::CVT_DOUBLEV)
+		|| (type == cvar_type::CVT_STRINGV)
 		;
 }
 
