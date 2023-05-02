@@ -44,7 +44,8 @@ struct cmd_token {
 enum struct cmd_status : unsigned {
 	Success,
 	ErrorCommandNotFound,
-	ErrorFileNotFound
+	ErrorFileNotFound,
+	ErrorTokenizerIncompleteString,
 };
 NCR_DEFINE_ENUM_FLAG_OPERATORS(cmd_status)
 
@@ -60,7 +61,7 @@ test(cmd_status s)
 
 // forward declarations
 inline void cmd_compress(std::string &str);
-inline std::vector<cmd_token> cmd_tokenize(const std::string &str);
+inline cmd_status cmd_tokenize(const std::string &str, std::vector<cmd_token> &cmd_toks);
 
 /*
  * A list of commands
@@ -129,7 +130,10 @@ struct cmds
 		cmd_compress(str);
 
 		// extract command tokens from config_str
-		auto cmd_tokens = cmd_tokenize(str);
+		std::vector<cmd_token> cmd_tokens;
+		auto tmp = cmd_tokenize(str, cmd_tokens);
+		if (tmp != cmd_status::Success)
+			return tmp;
 
 		// execute commands
 		for (auto cmd_tok: cmd_tokens) {
@@ -247,7 +251,11 @@ cmd_is_start_of_string(const std::string str, const size_t offset)
 
 
 /*
- * cmd_is_end_of_string - check if at the end of a string
+ * cmd_is_end_of_string - check if at the end of a string.
+ *
+ * Note that this function will test for \" by reading one character *before*
+ * offset. Thus, in principle, offset > 0 in general. if offset == 0, this
+ * function returns false.
  */
 inline bool
 cmd_is_end_of_string(const std::string str, const size_t offset)
@@ -267,6 +275,21 @@ cmd_is_whitespace(const std::string str, const size_t offset)
 	return (offset < slen) && (str[offset] <= ' ');
 }
 
+
+inline bool
+cmd_is_start_of_tuple(const std::string str, const size_t offset)
+{
+	const size_t slen = str.length();
+	return (offset < slen) && (str[offset] == '(');
+}
+
+
+inline bool
+cmd_is_end_of_tuple(const std::string str, const size_t offset)
+{
+	const size_t slen = str.length();
+	return (offset < slen) && (str[offset] == ')');
+}
 
 
 /*
@@ -374,13 +397,17 @@ cmd_compress(std::string &str)
  *
  * This function assumes that the string is already free of comments and
  * extraneous newlines, i.e. that compress was called on a raw input.
+ *
+ * NOTE: Currently, the function assumes that the string is a well formed
+ *       command. Lines which are not well defined are parsed as-is.
  */
-inline std::vector<cmd_token>
-cmd_tokenize(const std::string &str)
+inline cmd_status
+cmd_tokenize(const std::string &str, std::vector<cmd_token> &cmd_toks)
 {
 	// declare _min to avoid include <algorithm>
 	#define _min(X, Y) ((X) < (Y) ? (X) : (Y))
 
+	// length of the string
 	const size_t slen = str.length();
 	if (!slen) return {};
 
@@ -392,13 +419,15 @@ cmd_tokenize(const std::string &str)
 	size_t tok_end = 0;
 
 	// results
-	std::vector<cmd_token> cmd_toks;
+	// std::vector<cmd_token> cmd_toks;
 	size_t n_cmd_toks = 0;
 
 	while (tok_start < slen) {
 
 		// skip over delimiters. This will also eat multiple ;;;;;
 		if (str[tok_start] == delim) {
+			log_verbose("eat delim\n");
+
 			// what follows a delimiter is a command
 			is_cmd = true;
 			// jump over delimiter
@@ -408,9 +437,13 @@ cmd_tokenize(const std::string &str)
 
 		// ignore all whitespace which is not the delimiter
 		if (cmd_is_whitespace(str, tok_start)) {
+			log_verbose("eat whitespace\n");
+
 			do {
 				++tok_start;
-				++tok_end;
+				++tok_end; // TODO: no need to increment, will be set afterwards anyway, so maybe remove
+				if (tok_start >= slen)
+					break;
 			} while (cmd_is_whitespace(str, tok_start) && (str[tok_start] != delim));
 			tok_end = tok_start;
 			continue;
@@ -418,10 +451,22 @@ cmd_tokenize(const std::string &str)
 
 		// handle strings
 		if (cmd_is_start_of_string(str, tok_start)) {
-			tok_end = tok_start + 1;
-			// seek end of string
-			while ((++tok_end < slen) && !cmd_is_end_of_string(str, tok_end));
+			log_verbose("handle string\n");
 
+			// seek end of string (will read over \")
+			tok_end = tok_start + 1;
+			while (tok_end < slen) {
+				if (cmd_is_end_of_string(str, tok_end))
+					break;
+				++tok_end;
+			}
+
+			// Detect malformed string (i.e. end of line reached, but not
+			// end of string
+			if ((tok_end >= slen) && !cmd_is_end_of_string(str, tok_end)) {
+				log_verbose("Malformed input found while tokenizing, string did not end.\n");
+				return cmd_status::ErrorTokenizerIncompleteString;
+			}
 			tok_start = _min(tok_start + 1, slen - 1);
 			tok_end   = _min(tok_end, slen - 1);
 
@@ -448,15 +493,20 @@ cmd_tokenize(const std::string &str)
 				cmd_toks[n_cmd_toks-1].argv.push_back(arg);
 			}
 
-			// jump over "
-			tok_end += 1;
+			// jump over ", but make sure not to jump over end of line
+			tok_end = _min(tok_end + 1, slen - 1);
 			tok_start = tok_end;
 			continue;
 		}
 
 		// handle everything else
-		while ((++tok_end < slen) && (str[tok_end] != delim) && str[tok_end] != ' ');
-		tok_end = _min(tok_end, slen - 1);
+		while (++tok_end < slen) {
+			// if we're at a delimiter, we can break, but also for whitespace
+			// XXX: maybe use a non-checking whitespace function here instead of
+			//      manual test?
+			if (str[tok_end] == delim || str[tok_end] == ' ')
+				break;
+		}
 
 		if (tok_end > tok_start) {
 			std::string arg = str.substr(tok_start, tok_end - tok_start);
@@ -475,7 +525,7 @@ cmd_tokenize(const std::string &str)
 		tok_start = tok_end;
 	}
 
-	return cmd_toks;
+	return cmd_status::Success;
 	#undef _min
 }
 
