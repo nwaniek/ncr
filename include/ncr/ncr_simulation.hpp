@@ -306,6 +306,7 @@ void
 simulation_run(simulation *sim)
 {
 	using namespace std::chrono;
+	using namespace std::chrono_literals;
 
 	assert(sim != nullptr);
 	sim->running = true;
