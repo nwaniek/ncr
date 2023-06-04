@@ -46,9 +46,23 @@ struct transport;
 // as index type, simply use the slab memory index type
 using envelope_index = slab_memory_index_t;
 
-// additional transport options can be used to influence when or how messages
-// will be delivered. For instance, one could define options that encode a
-// delay. For this to work, the following templates must be further specialized.
+
+/*
+ * struct null_options - a struct that represents an empty set of options
+ *
+ * Additional transport options can be used to influence when or how messages
+ * will be delivered. For instance, one could define options that encode a
+ * delay. For this to work, the following templates must be further specialized.
+ *
+ * Note: Internally, the transport does *not* use any options passed to it. They
+ *       will be part of the message that will be sent around. More precisely,
+ *       each payload that the transport shall deliver is wrapped into an
+ *       'envelope'. The options are part of this envelope, and can be used by a
+ *       user of the transport system to, for instance to deliver messages at
+ *       a certain time or after a number of ticks of simulations.
+ *
+ * TODO: rename (empty_options? put into a namespace? ncr::TransportOptions::empty?)
+ */
 struct null_options { };
 
 
@@ -72,7 +86,7 @@ struct envelope {
 	} id;
 
 	// additional options that will be required for sorting and delivery
-	// evaluation
+	// evaluation. Note that
 	typename Traits::options_type options;
 
 	// payload of this message at the end of the struct
@@ -241,13 +255,47 @@ struct transport
 	slab_memory<envelope_type> __mem_envelopes;
 
 	typedef std::function<bool(const envelope_type&, const envelope_type&)> CompareEnvelopes;
+
+	/*
+	 * struct back_inserter - add messags to the back of the buffer
+	 *
+	 * A back-inserter can be used, for instance, when creating a time-less
+	 * transport for which additional messages should simply be put at the end
+	 * of the internal message buffer.
+	 *
+	 * Usage Example:
+	 *
+	 *		// a simple type trait which tells the transport the payload type as
+	 *		// well as the options_type (here: null_tyupe
+	 *		struct TTypeTraits {
+	 *			using payload_type = some_payload;
+	 *			using options_type = null_options;
+	 *		};
+	 *
+	 *		// declare a (timeless) transport which simply puts all messages at
+	 *		// the end of the internal buffer
+	 *      using transport_type = transport<TTypeTraits>;
+	 *      transport_type transport(transport_type::back_inserter{});
+	 */
 	struct back_inserter {
 		bool operator()(const envelope_type &, const envelope_type &) { return true; }
 	};
+
+	/*
+	 * struct front_inserter - add messages to the front of the buffer.
+	 *
+	 * A front-inserter can be used, for instance, when creating a time-less
+	 * transport for which additional messages should be put in front of other,
+	 * already existing messages within the internal message buffer.
+	 *
+	 * For an example, see struct back_inserter.
+	 */
 	struct front_inserter {
 		bool operator()(const envelope_type &, const envelope_type &) { return false; }
 	};
 
+	// TODO: maybe turn into callable struct, so that it can be accessed via
+	//       TransportType::accept_all ?
 	typedef std::function<bool(const typename transport<Traits>::envelope_type)> DeliveryAttempt;
 	const DeliveryAttempt accept_all = [](const envelope_type &){ return true; };
 	const DeliveryAttempt reject_all = [](const envelope_type &){ return false; };
