@@ -6,6 +6,7 @@
  * See LICENSE file for more details.
  *
  */
+#pragma once
 
 #include <iterator>
 #include <vector>
