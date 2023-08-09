@@ -1470,6 +1470,12 @@ write_genomes_to_file(
  * This function takes a filename and a callback. It will then read all lines
  * from the file and decode the genome, passing both the key of the genome, i.e.
  * its encoded string, as well as the instantiated genome.
+ *
+ * TODO: replace the callback void (*cb) with auto& -> this works in C++20 and
+ * is an abbreviated function template, see https://en.cppreference.com/w/cpp/language/function_template#Abbreviated_function_template
+ * Reason to replace is that this here cannot be called with a lambda that
+ * captures its arguments, i.e. only lambdas which decay into a function
+ * pointer.
  */
 inline void
 load_genomes_from_file(
