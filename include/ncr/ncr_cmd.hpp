@@ -42,10 +42,10 @@ struct cmd_token {
 };
 
 enum struct cmd_status : unsigned {
-	Success,
-	ErrorCommandNotFound,
-	ErrorFileNotFound,
-	ErrorTokenizerIncompleteString,
+	Success                        = 0x00,
+	ErrorCommandNotFound           = 0x01,
+	ErrorFileNotFound              = 0x02,
+	ErrorTokenizerIncompleteString = 0x04,
 };
 NCR_DEFINE_ENUM_FLAG_OPERATORS(cmd_status)
 

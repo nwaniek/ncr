@@ -21,8 +21,8 @@
 namespace ncr {
 
 enum struct filesystem_status : unsigned {
-	Success,
-	ErrorFileNotFound
+	Success           = 0x00,
+	ErrorFileNotFound = 0x01
 };
 NCR_DEFINE_ENUM_FLAG_OPERATORS(filesystem_status)
 

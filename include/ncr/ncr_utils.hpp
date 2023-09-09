@@ -431,6 +431,8 @@ trim(std::string &s, const char *ws = " \n\t\r")
  * This function evaluates if a certain flag, i.e. bit pattern, is present in v.
  */
 template <typename T, typename U>
+requires (std::unsigned_integral<T> && std::unsigned_integral<U>) ||
+		 (std::unsigned_integral<typename std::underlying_type<T>::type> && std::unsigned_integral<typename std::underlying_type<U>::type>)
 inline bool
 flag_is_set(const T v, const U flag)
 {
@@ -439,6 +441,8 @@ flag_is_set(const T v, const U flag)
 
 
 template <typename T, typename U>
+requires (std::unsigned_integral<T> && std::unsigned_integral<U>) ||
+		 (std::unsigned_integral<typename std::underlying_type<T>::type> && std::unsigned_integral<typename std::underlying_type<U>::type>)
 inline T
 set_flag(const T v, const U flag)
 {
@@ -447,6 +451,8 @@ set_flag(const T v, const U flag)
 
 
 template <typename T, typename U>
+requires (std::unsigned_integral<T> && std::unsigned_integral<U>) ||
+		 (std::unsigned_integral<typename std::underlying_type<T>::type> && std::unsigned_integral<typename std::underlying_type<U>::type>)
 inline T
 clear_flag(const T v, const U flag)
 {
@@ -455,6 +461,8 @@ clear_flag(const T v, const U flag)
 
 
 template <typename T, typename U>
+requires (std::unsigned_integral<T> && std::unsigned_integral<U>) ||
+		 (std::unsigned_integral<typename std::underlying_type<T>::type> && std::unsigned_integral<typename std::underlying_type<U>::type>)
 inline T
 toggle_flag(const T v, const U flag)
 {
@@ -466,7 +474,7 @@ toggle_flag(const T v, const U flag)
  * bitmask - create bitmask of given length at offset
  */
 template <typename U>
-requires std::unsigned_integral<U>
+requires std::unsigned_integral<U> || std::unsigned_integral<typename std::underlying_type<U>::type>
 constexpr U
 bitmask(U offset, U length)
 {
@@ -477,7 +485,7 @@ bitmask(U offset, U length)
 
 
 template <typename U>
-requires std::unsigned_integral<U>
+requires std::unsigned_integral<U> || std::unsigned_integral<typename std::underlying_type<U>::type>
 inline U
 set_bits(U dest, U offset, U length, U bits)
 {
@@ -487,7 +495,7 @@ set_bits(U dest, U offset, U length, U bits)
 
 
 template <typename U>
-requires std::unsigned_integral<U>
+requires std::unsigned_integral<U> || std::unsigned_integral<typename std::underlying_type<U>::type>
 inline U
 get_bits(U src, U offset, U length)
 {
@@ -496,7 +504,7 @@ get_bits(U src, U offset, U length)
 
 
 template <typename U>
-requires std::unsigned_integral<U>
+requires std::unsigned_integral<U> || std::unsigned_integral<typename std::underlying_type<U>::type>
 inline U
 toggle_bits(U src, U offset, U length)
 {
@@ -511,6 +519,8 @@ toggle_bits(U src, U offset, U length)
  * This function evaluates if the Nth bit is present in variable v.
  */
 template <typename T, typename U>
+requires (std::unsigned_integral<T> && std::unsigned_integral<U>) ||
+		 (std::unsigned_integral<typename std::underlying_type<T>::type> && std::unsigned_integral<typename std::underlying_type<U>::type>)
 inline bool
 bit_is_set(const T v, const U N)
 {
@@ -519,6 +529,8 @@ bit_is_set(const T v, const U N)
 
 
 template <typename T, typename U>
+requires (std::unsigned_integral<T> && std::unsigned_integral<U>) ||
+		 (std::unsigned_integral<typename std::underlying_type<T>::type> && std::unsigned_integral<typename std::underlying_type<U>::type>)
 inline T
 set_bit(const T v, const U N)
 {
@@ -527,6 +539,8 @@ set_bit(const T v, const U N)
 
 
 template <typename T, typename U>
+requires (std::unsigned_integral<T> && std::unsigned_integral<U>) ||
+		 (std::unsigned_integral<typename std::underlying_type<T>::type> && std::unsigned_integral<typename std::underlying_type<U>::type>)
 inline T
 clear_bit(const T v, const U N)
 {
@@ -535,6 +549,8 @@ clear_bit(const T v, const U N)
 
 
 template <typename T, typename U>
+requires (std::unsigned_integral<T> && std::unsigned_integral<U>) ||
+		 (std::unsigned_integral<typename std::underlying_type<T>::type> && std::unsigned_integral<typename std::underlying_type<U>::type>)
 inline T
 toggle_bit(const T v, const U N)
 {

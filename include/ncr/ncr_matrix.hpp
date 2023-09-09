@@ -20,11 +20,12 @@ namespace ncr { namespace matrix {
 namespace io {
 
 enum struct status: unsigned {
-	Success,
-	WriteError,
-	ReadError,
+	Unknown           = 0x00,
+	Success           = 0x01,
+	WriteError        = 0x02,
+	ReadError         = 0x04,
 	// TODO: more specific errors
-	ErrorFileNotFound
+	ErrorFileNotFound = 0x08
 };
 NCR_DEFINE_ENUM_FLAG_OPERATORS(status)
 
