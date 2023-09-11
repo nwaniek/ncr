@@ -13,14 +13,14 @@
  * a simple main.cpp that uses this logger is
  *
  *     #include <iostream>
- *     #include <log.hpp>
+ *     #include <ncr/ncr_log.hpp>
  *     #include <some/other/header.hpp>
  *
- *     NCR_LOG_DECLARATION;
+ *     ncr::NCR_LOG_DECLARATION;
  *
  *     int main() {
  *	       // set the default logger instance
- *         NCR_LOG_INSTANCE.set_policy(new logger_policy_stdcout());
+ *         ncr::NCR_LOG_INSTANCE.set_policy(new ncr::logger_policy_stdcout());
  *
  *         // do something interesting
  *         return 0;
@@ -30,10 +30,10 @@
  * LOG_DECLARATION call:
  *
  *     #include <iostream>
- *     #include <log.hpp>
+ *     #include <ncr/ncr_log.hpp>
  *     #include <some/other/header.hpp>
  *
- *     NCR_LOG_DECLARATION(new logger_policy_stdcout());
+ *     ncr::NCR_LOG_DECLARATION(new ncr::logger_policy_stdcout());
  *
  *     int main() {
  *         // do something interesting
@@ -51,14 +51,14 @@
  * the behavior of set_policy, see documentation below.
  *
  *     #include <iostream>
- *     #include <log.hpp>
+ *     #include <ncr/ncr_log.hpp>
  *     #include <some/other/header.hpp>
  *
  *     struct custom_logger_policy : logger_policy {
  *         // implementation ...
  *     }
  *
- *     NCR_LOG_DECLARATION(new custom_logger_policy(), false);
+ *     ncr::NCR_LOG_DECLARATION(new custom_logger_policy(), false);
  *
  *     int main() {
  *         // do something interesting

@@ -28,7 +28,7 @@ inline void
 gl_check_error(int line, const char *file, const char *func) {
 	GLuint error;
 	while ((error = glGetError()))
-		log_error("E: OpenGL Error %s %s %d, %s\n", file, func, line, gluErrorString(error));
+		log_error("E: OpenGL Error ", file, " ", func, " ", line, " ", gluErrorString(error), "\n");
 }
 
 
