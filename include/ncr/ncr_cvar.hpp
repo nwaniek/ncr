@@ -42,6 +42,7 @@ namespace ncr {
 
 
 // TODO: use type traits for compile time errors
+// TODO: change upper-case names to lower-case names
 
 
 //   CVT_TYPE       type              name        field  conversion function
