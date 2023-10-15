@@ -180,6 +180,8 @@ Related ncr projects
 
 License Information
 -------------------
+MIT License. See `LICENSE <LICENSE>`_ for more details.
 
-The headers are licensed under the MIT License. For more information, see the
-LICENSE file.
+Authors
+-------
+Nicolai Waniek
