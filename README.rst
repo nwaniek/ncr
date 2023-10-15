@@ -13,6 +13,7 @@ Disclaimer
 | **Q**: Are the implementations of the data structures and algorithms complete?
 | **A**: Almost surely no.
 
+
 | **Q**: Are at least all implementations correct?
 | **A**: Also almost surely no. Most of the functions were tested and evaluated
   in separate projects, but of course there's no guarantee that they are
@@ -20,11 +21,13 @@ Disclaimer
   yet.  Also, some implementations might not follow some constraints given or
   recommended by the C++ standard. Such locations are, however, scarce.
 
+
 | **Q**: What about speed?
 | **A**: While most algorithms were selected to have reasonable space and time
   complexity, they were not developed with the aim to have the fastest
   implementation around. Their performance currently suffices my own personal
   requirements.
+
 
 | **Q**: Are all the algorithms and data structures stable?
 | **A**: Almost surely no. They are used in several fast-moving and experimental
@@ -34,6 +37,7 @@ Disclaimer
   changes, this will be announced properly or the implementations moved into new
   files (for instance see ncr_transport -> ncr_transport2).
 
+
 | **Q**: Then why use them?
 | **A**: Because there were no alternatives available that didn't pull in many
   additional dependencies. Also, some of the C++20 headers were not available on
@@ -42,6 +46,7 @@ Disclaimer
   methods or access to data that was required during a project (example: specify
   the storage type of an std::bitset, or access its underlying array to write it
   to a binary file, or change its size during run-time).
+
 
 Conclusion: Use entirely at your own risk. In case of doubt, test if the
 functions are correct and in particular measure performance if this is a
