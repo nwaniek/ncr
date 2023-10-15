@@ -706,6 +706,8 @@ hexdump(std::ostream& os, const std::vector<uint8_t> &data)
 		}
 		os << "\n";
 	}
+	// reset to default
+	os << std::setfill(os.widen(' '));
 }
 
 
