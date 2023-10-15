@@ -170,7 +170,7 @@ They can be found in the folder `include/ncr/experimental`.
     ncr_shader     - Shader stuff for OpenGL
 
 
-Other ncr projects
+Related ncr projects
 ----------------
 
 * `ncr_numpy <http://github.com/nwaniek/ncr_numpy>`_ C++20 headers / library for
