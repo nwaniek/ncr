@@ -27,6 +27,8 @@
 #include <algorithm>
 #include <cstdint>
 
+#include <ncr/ncr_types.hpp>
+
 namespace ncr {
 
 
@@ -678,7 +680,7 @@ struct memory_guard<T, Ts...> : memory_guard<Ts...>
 /*
  * hexdump - generate a hexdump for a buffer similar to hex editors
  */
-void
+inline void
 hexdump(std::ostream& os, const std::vector<uint8_t> &data)
 {
 	const size_t bytes_per_line = 16;
