@@ -79,7 +79,7 @@ the following (bibtex) snippet:
         author =   {Nicolai Waniek},
         title =    {{NCR}: {Neural and Natural Computation Repository}},
         howpublished = {\url{https://github.com/nwaniek/ncr}}
-        year = {2021--2022}
+        year = {2021--2023}
     }
 
 There might be a proper paper, which describes the software in detail, to cite
@@ -100,10 +100,12 @@ found in the folder `include/ncr`.
     ncr_algorithm  - certain algorithms to work with ncr data structures
     ncr_automata   - header file for alphabets, strings, and finite state machines
     ncr_bayes      - Bayesian math, structures, and functions, e.g. particle filters
+    ncr_bits       - Functions for bit operations
     ncr_bitset     - compile-time fixed as well as run-time dynamic size bitset
                      similar to std::bitset
     ncr_chrono     - time measurement functions
     ncr_cmd        - a simple command (file) parser inspired by id's Quake 3 Arena.
+    ncr_common     - do not use this, it's an empty shell
     ncr_cvar       - A configuration variable system inspired by id's Quake 3 Arena.
     ncr_filesystem - very basic filesystem utilities
     ncr_geometry   - math operations for geometry processing. Don't use this.
@@ -137,6 +139,7 @@ found in the folder `include/ncr`.
                      passing between "ports". Don't use this, use ncr_transport2.
     ncr_transport2 - A slight improvement to ncr_transport which externalises
                      comparison of message delivery to the user of ncr_transport
+    ncr_types      - common type definitions (not used everywhere yet)
     ncr_units      - Some basic literal specifications to have common grounds in all
                      projects
     ncr_utils      - Helpful utility functions and macros
@@ -158,13 +161,21 @@ Overview [Experimental]
 -----------------------
 
 There are a few experimental headers which are already part of ncr, but very
-incomplete, unstable, and well experimental. Recommendation: Don't use them.
+incomplete, unstable, and, well, experimental. Recommendation: Don't use them.
 They can be found in the folder `include/ncr/experimental`.
 
 .. code::
 
     ncr_glutils    - Utilities to work with OpenGL
     ncr_shader     - Shader stuff for OpenGL
+
+
+Other ncr projects
+----------------
+
+* `ncr_numpy <http://github.com/nwaniek/ncr_numpy>`_ C++20 headers / library for
+  working with numpy's npz and npy files. Also contains a basic `ndarray`
+  implementation.
 
 
 License Information

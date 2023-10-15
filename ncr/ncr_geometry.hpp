@@ -1,7 +1,7 @@
 /*
  * ncr_geometry - algorithms and data structures for geometry processing
  *
- * SPDX-FileCopyrightText: 2022 Nicolai Waniek <rochus@rochus.net>
+ * SPDX-FileCopyrightText: 2022-2023 Nicolai Waniek <n@rochus.net>
  * SPDX-License-Identifier: MIT
  * See LICENSE file for more details.
  *
@@ -13,6 +13,13 @@
 
 namespace ncr {
 
+#if 0
+
+/*
+ * NOTE: This file is currently a stub and not used. it might get filled with
+ * working content when I need geometry routines that I cannot find in a way I
+ * need them in other libraries.
+ */
 
 /*
  * pose_t - pose of a moving agent
@@ -142,7 +149,6 @@ void intersett_aabb();
 */
 
 
-#if 0
 
 The following is working code, but disabled to prevent usage as this requires
 some refactoring.

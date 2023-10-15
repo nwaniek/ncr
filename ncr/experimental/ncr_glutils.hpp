@@ -1,7 +1,7 @@
 /*
  * ncr_glutils - OpenGL utility functions
  *
- * SPDX-FileCopyrightText: 2022 Nicolai Waniek <rochus@rochus.net>
+ * SPDX-FileCopyrightText: 2022-2023 Nicolai Waniek <n@rochus.net>
  * SPDX-License-Identifier: MIT
  * See LICENSE file for more details
  */
