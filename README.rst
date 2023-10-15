@@ -10,39 +10,38 @@ C++ STL, they diverge quite drastically at others.
 
 Disclaimer
 ----------
+| **Q**: Are the implementations of the data structures and algorithms complete?
+| **A**: Almost surely no.
 
-Q: Are the implementations of the data structures and algorithms complete?
-A: Almost surely no.
+| **Q**: Are at least all implementations correct?
+| **A**: Also almost surely no. Most of the functions were tested and evaluated
+  in separate projects, but of course there's no guarantee that they are
+  entirely correct and don't contain some bugs which were not found and squashed
+  yet.  Also, some implementations might not follow some constraints given or
+  recommended by the C++ standard. Such locations are, however, scarce.
 
-Q: Are at least all implementations correct?
-A: Also almost surely no. Most of the functions were tested and evaluated in
-separate projects, but of course there's no guarantee that they are entirely
-correct and don't contain some bugs which were not found and squashed yet.
-Also, some implementations might not follow some constraints given or
-recommended by the C++ standard. Such locations are, however, scarce.
+| **Q**: What about speed?
+| **A**: While most algorithms were selected to have reasonable space and time
+  complexity, they were not developed with the aim to have the fastest
+  implementation around. Their performance currently suffices my own personal
+  requirements.
 
-Q: What about speed?
-A: While most algorithms were selected to have reasonable space and time
-complexity, they were not developed with the aim to have the fastest
-implementation around. Their performance currently suffices my own personal
-requirements.
+| **Q**: Are all the algorithms and data structures stable?
+| **A**: Almost surely no. They are used in several fast-moving and experimental
+  scientific projects. They are thus subject to change. That is, if there are
+  issues within or limits to their current implementations, they will be
+  adapated accordingly to fit the needs of these projects. In case of drastic
+  changes, this will be announced properly or the implementations moved into new
+  files (for instance see ncr_transport -> ncr_transport2).
 
-Q: Are all the algorithms and data structures stable?
-A: Almost surely no. They are used in several fast-moving and experimental
-scientific projects. They are thus subject to change. That is, if there are
-issues within or limits to their current implementations, they will be
-adapated accordingly to fit the needs of these projects. In case of drastic
-changes, this will be announced properly or the implementations moved into new
-files (for instance see ncr_transport -> ncr_transport2).
-
-Q: Then why use them?
-A: Because there were no alternatives available that didn't pull in many
-additional dependencies. Also, some of the C++20 headers were not available on
-the systems that I compiled my software on. Still, I needed partial
-implementations of the stuff. Sometimes the STL headers don't provide all the
-methods or access to data that was required during a project (example: specify
-the storage type of an std::bitset, or access its underlying array to write it
-to a binary file, or change its size during run-time).
+| **Q**: Then why use them?
+| **A**: Because there were no alternatives available that didn't pull in many
+  additional dependencies. Also, some of the C++20 headers were not available on
+  the systems that I compiled my software on. Still, I needed partial
+  implementations of the stuff. Sometimes the STL headers don't provide all the
+  methods or access to data that was required during a project (example: specify
+  the storage type of an std::bitset, or access its underlying array to write it
+  to a binary file, or change its size during run-time).
 
 Conclusion: Use entirely at your own risk. In case of doubt, test if the
 functions are correct and in particular measure performance if this is a
@@ -63,7 +62,6 @@ more modern implementations.
 
 Usage Guidelines
 ----------------
-
 There are no explicit rules when using the headers except following the MIT
 License (see below, or the LICENSE file). Still, if you use any of the headers
 or other parts of the ncr ecosystem in your work, it would be great if you could
@@ -77,7 +75,7 @@ the following (bibtex) snippet:
 
     @Misc{ncr,
         author =   {Nicolai Waniek},
-        title =    {{NCR}: {Neural and Natural Computation Repository}},
+        title =    {{ncr}: {Neural and Natural Computation Repository}},
         howpublished = {\url{https://github.com/nwaniek/ncr}}
         year = {2021--2023}
     }
@@ -91,7 +89,6 @@ your favorite funding agency or company to (continue to) fund my research.
 
 Overview
 --------
-
 The following gives a brief overview of the 'core' headers in ncr. They can be
 found in the folder `include/ncr`.
 
