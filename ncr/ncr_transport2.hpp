@@ -115,7 +115,7 @@ struct port {
 	using envelope_type = envelope<Traits>;
 
 	// pointer to the transport this port belongs to
-	transport<Traits> *transport;
+	struct transport<Traits> *transport;
 
 	// every port has an ID. This is set by the *mandatory* call to register the
 	// port with a transport
