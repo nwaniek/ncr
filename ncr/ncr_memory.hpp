@@ -86,8 +86,8 @@ struct slab_memory
 {
 	// types used within this memory
 	using index_type        = slab_memory_index_t;
-	using item_type			= slab_memory_item<T>;
-	using memory_type		= std::vector<item_type>;
+	using item_type	        = slab_memory_item<T>;
+	using memory_type       = std::vector<item_type>;
 	using page_type         = std::vector<memory_type*>;
 	template <typename ValueType> using optional = std::optional<ValueType>;
 
@@ -104,10 +104,10 @@ struct slab_memory
 	// TODO: needs iterators .begin(), .end(), ++, etc. to walk over all memory
 	//       items
 
-	optional<T * const>		get(const optional<index_type> index);
+	optional<T * const>     get(const optional<index_type> index);
 	void                    set(const optional<index_type> index, T&& value);
 
-	size_t					capacity()   const { return this->_stats.capacity; };
+	size_t                  capacity()   const { return this->_stats.capacity; };
 	size_t                  size()       const { return this->_stats.size; };
 	size_t                  page_count() const { return this->_stats.page_count; };
 	size_t                  page_size()  const { return this->_stats.page_size; };
@@ -125,10 +125,10 @@ private:
 	// the memory itself
 	page_type               pages;
 	std::list<index_type>	_free_indexes;
-	size_t					_last_index = 0;
+	size_t                  _last_index = 0;
 
 	// statistics and maintenance
-	slab_memory_stats		_stats;
+	slab_memory_stats       _stats;
 };
 
 
