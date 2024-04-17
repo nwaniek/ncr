@@ -13,16 +13,17 @@
 #pragma once
 
 #include <cmath>
-#include <vector>
 #include <functional>
-#include <random>
 #include <iterator>
-#include <string>
 #include <map>
+#include <random>
+#include <string>
+#include <vector>
 
 #include <ncr/ncr_utils.hpp>
 
-namespace ncr {
+namespace ncr
+{
 
 
 /*
@@ -37,7 +38,6 @@ struct SamplerTraits {
 	using precision_type = P;
 	using rng_type       = RngT;
 };
-
 
 
 /*
@@ -62,20 +62,20 @@ struct SamplerTraits {
  *                  SamplerTraits for an example
  */
 
-template <typename ContainerT, typename Traits = SamplerTraits<double, std::mt19937_64>>
+template <typename ContainerT,
+          typename Traits = SamplerTraits<double, std::mt19937_64>>
 std::vector<size_t>
 weighted_sampler(
-		const ContainerT &cont,
-		size_t n_items,
-		typename Traits::rng_type *rng,
-		const std::function<typename Traits::precision_type (const typename ContainerT::value_type &)> &value = [](const typename ContainerT::value_type &v){ return v; })
+    const ContainerT &cont, size_t n_items, typename Traits::rng_type *rng,
+    const std::function<typename Traits::precision_type(const typename ContainerT::value_type &)> &value = [](const typename ContainerT::value_type &v) { return v; })
 {
 	using P = typename Traits::precision_type;
 
 	// allocate space for the flat values
 	std::vector<P> p(cont.size(), 0.0);
 
-	// copy over the values that indicate weights/fitness/etc. using the member access function
+	// copy over the values that indicate weights/fitness/etc. using the
+	// member access function
 	std::transform(cont.begin(), cont.end(), p.begin(), value);
 
 	// compute probabilities, cumulative probability
@@ -92,17 +92,18 @@ weighted_sampler(
 
 	// draw samples
 	std::uniform_real_distribution<P> dist;
-	std::vector<size_t> indices(n_items);
+	std::vector<size_t>               indices(n_items);
 	for (size_t i = 0; i < n_items; i++) {
-		indices[i] = std::upper_bound(t.begin(), t.end(), dist(*rng)) - t.begin();
+		indices[i] = std::upper_bound(t.begin(), t.end(), dist(*rng)) -
+		             t.begin();
 	}
 	return indices;
 }
 
 
-
 /*
- * weighted_sampler_std - sample indexes of a weighted vector using std::discrete_distribution
+ * weighted_sampler_std - sample indexes of a weighted vector using
+ * std::discrete_distribution
  *
  * args:
  *     weights    - vector of weights from which to draw indexes
@@ -110,8 +111,8 @@ weighted_sampler(
  *     rng        - pointer to a random number generator
  *
  * template type arguments:
- *     ContainerT - type of the container that holds the weights. must be some iterable
- *     RngT       - random number generator type
+ *     ContainerT - type of the container that holds the weights. must be some
+ * iterable RngT       - random number generator type
  *
  * TODO: if possible, adapt the lambda strategy from above
  */
@@ -119,8 +120,9 @@ template <typename ContainerT, typename RngT = std::mt19937_64>
 std::vector<size_t>
 weighted_sampler_std(const ContainerT &weights, size_t n_items, RngT *rng)
 {
-	std::vector<size_t> indices(n_items);
-	std::discrete_distribution<ptrdiff_t> dist(std::begin(weights), std::end(weights));
+	std::vector<size_t>                   indices(n_items);
+	std::discrete_distribution<ptrdiff_t> dist(std::begin(weights),
+	                                           std::end(weights));
 
 	for (size_t i = 0; i < n_items; i++)
 		indices[i] = dist(*rng);
@@ -143,29 +145,28 @@ weighted_sampler_std(const ContainerT &weights, size_t n_items, RngT *rng)
 template <typename T, typename U, typename P, typename RngT = std::mt19937_64>
 requires std::floating_point<P>
 std::vector<size_t>
-low_variance_sampler(
-		T &container,
-		size_t n_items,
-		RngT *rng,
-		const std::function<P (const U *elem)> &weight_fn)
+low_variance_sampler(T &container, size_t n_items, RngT *rng,
+                     const std::function<P(const U *elem)> &weight_fn)
 {
 	// uniform random distribution on [0, 1]
-	std::uniform_real_distribution<P> unif(static_cast<P>(0.0), static_cast<P>(1.0));
+	std::uniform_real_distribution<P> unif(static_cast<P>(0.0),
+	                                       static_cast<P>(1.0));
 
 	// number of elements in the container
 	std::vector<size_t> indices(n_items);
 
 	// select the agent with maximal fitness
-	auto max_item = std::max_element(container.begin(), container.end(),
-			[weight_fn](const U *left, const U *right) {
-				return weight_fn(left) < weight_fn(right);
-			});
+	auto max_item =
+	    std::max_element(container.begin(), container.end(),
+	                     [weight_fn](const U *left, const U *right) {
+		                     return weight_fn(left) < weight_fn(right);
+	                     });
 	auto max_weight = weight_fn(*max_item);
 
 	// weighting
-	auto beta = 0.0;
+	auto beta       = 0.0;
 	// random start index for sampling
-	size_t index = unif_random(rng);
+	size_t index    = unif_random(rng);
 	for (size_t i = 0; i < n_items; i++) {
 		beta += unif(*rng) * 2.0 * max_weight;
 		while (beta > weight_fn(container[index])) {
@@ -187,7 +188,8 @@ low_variance_sampler(
  * for std::min (see 25.4.7 in C++11).
  */
 template <typename T0, typename T1, typename... Ts>
-constexpr auto min(T0 &&v0, T1 &&v1, Ts &&... ts)
+constexpr auto
+min(T0 &&v0, T1 &&v1, Ts &&...ts)
 {
 	if constexpr (sizeof...(ts) == 0) {
 		return v1 < v0 ? v1 : v0;
@@ -206,7 +208,8 @@ constexpr auto min(T0 &&v0, T1 &&v1, Ts &&... ts)
  * for std::min (see 25.4.7 in C++11).
  */
 template <typename T0, typename T1, typename... Ts>
-constexpr auto max(T0 &&v0, T1 &&v1, Ts &&... ts)
+constexpr auto
+max(T0 &&v0, T1 &&v1, Ts &&...ts)
 {
 	if constexpr (sizeof...(ts) == 0) {
 		return v0 > v1 ? v0 : v1;
@@ -228,10 +231,8 @@ constexpr auto max(T0 &&v0, T1 &&v1, Ts &&... ts)
  */
 template <typename InputIt, class Compare>
 size_t
-levensthein_naive(
-		InputIt a_first, InputIt a_last,
-		InputIt b_first, InputIt b_last,
-		Compare cmp_equal)
+levensthein_naive(InputIt a_first, InputIt a_last, InputIt b_first,
+                  InputIt b_last, Compare cmp_equal)
 {
 	// result = |a| if |b| == 0
 	if (b_first == b_last)
@@ -243,27 +244,19 @@ levensthein_naive(
 
 	// result = lev(tail(a), tail(b)) if a[0] == b[0]
 	if (cmp_equal(*a_first, *b_first))
-		return levensthein(
-				std::next(a_first), a_last,
-				std::next(b_first), b_last,
-				cmp_equal);
+		return levensthein(std::next(a_first), a_last,
+		                   std::next(b_first), b_last, cmp_equal);
 
 	// else, minimum of the following three
 	// lev(tail(a), b)
-	const size_t _m0 = levensthein(
-			std::next(a_first), a_last,
-			b_first,            b_last,
-			cmp_equal);
+	const size_t _m0 =
+	    levensthein(std::next(a_first), a_last, b_first, b_last, cmp_equal);
 
-	const size_t _m1 = levensthein(
-			a_first,            a_last,
-			std::next(b_first), b_last,
-			cmp_equal);
+	const size_t _m1 =
+	    levensthein(a_first, a_last, std::next(b_first), b_last, cmp_equal);
 
-	const size_t _m2 = levensthein(
-			std::next(a_first), a_last,
-			std::next(b_first), b_last,
-			cmp_equal);
+	const size_t _m2 = levensthein(std::next(a_first), a_last,
+	                               std::next(b_first), b_last, cmp_equal);
 
 	return 1 + min(_m0, _m1, _m2);
 }
@@ -283,15 +276,13 @@ levensthein_naive(
  */
 template <typename InputIt, class Compare>
 size_t
-levensthein_dynamic(
-		InputIt a_first, InputIt a_last,
-		InputIt b_first, InputIt b_last,
-		Compare cmp_equal)
+levensthein_dynamic(InputIt a_first, InputIt a_last, InputIt b_first,
+                    InputIt b_last, Compare cmp_equal)
 {
 	std::vector<size_t> v0, v1;
 
-	size_t M = std::distance(a_first, a_last);
-	size_t N = std::distance(b_first, b_last);
+	size_t              M = std::distance(a_first, a_last);
+	size_t              N = std::distance(b_first, b_last);
 
 	v0.resize(N + 1);
 	v1.resize(N + 1);
@@ -302,13 +293,13 @@ levensthein_dynamic(
 	}
 
 	for (size_t i = 0; i <= M - 1; i++) {
-		v1[0] = i + 1;
+		v1[0]        = i + 1;
 
 		auto b_local = b_first;
 
 		for (size_t j = 0; j <= N - 1; j++) {
-			size_t deletion  = v0[j+1] + 1;
-			size_t insertion = v1[j] + 1;
+			size_t deletion     = v0[j + 1] + 1;
+			size_t insertion    = v1[j] + 1;
 
 			size_t substitution = 0;
 			if (cmp_equal(*a_first, *b_local))
@@ -319,7 +310,7 @@ levensthein_dynamic(
 			v1[j + 1] = min(deletion, insertion, substitution);
 
 			// move the local iterator forward
-			b_local = std::next(b_local);
+			b_local   = std::next(b_local);
 		}
 
 		// swap data
@@ -341,10 +332,8 @@ levensthein_dynamic(
  */
 template <typename InputIt, class Compare>
 size_t
-levensthein(
-		InputIt a_first, InputIt a_last,
-		InputIt b_first, InputIt b_last,
-		Compare cmp_equal)
+levensthein(InputIt a_first, InputIt a_last, InputIt b_first, InputIt b_last,
+            Compare cmp_equal)
 {
 	return levensthein_dynamic(a_first, a_last, b_first, b_last, cmp_equal);
 }
@@ -358,9 +347,7 @@ levensthein(
  */
 template <typename InputIt>
 size_t
-levensthein(
-		InputIt a_first, InputIt a_last,
-		InputIt b_first, InputIt b_last)
+levensthein(InputIt a_first, InputIt a_last, InputIt b_first, InputIt b_last)
 {
 	typedef typename std::iterator_traits<InputIt>::value_type elem_type;
 	auto cmp_eq = [](elem_type left, elem_type right) {
@@ -375,13 +362,11 @@ levensthein(
  *
  * This is the specialization for C++ strings based on basic_string.
  */
-template <typename T,
-		 class Traits = std::char_traits<T>,
-		 class Allocator = std::allocator<T>>
+template <typename T, class Traits = std::char_traits<T>,
+          class Allocator = std::allocator<T>>
 size_t
-levensthein(
-		const std::basic_string<T, Traits, Allocator> &a,
-		const std::basic_string<T, Traits, Allocator> &b)
+levensthein(const std::basic_string<T, Traits, Allocator> &a,
+            const std::basic_string<T, Traits, Allocator> &b)
 {
 	return levensthein(a.begin(), a.end(), b.begin(), b.end());
 }
@@ -394,9 +379,7 @@ levensthein(
  */
 template <typename Key, typename T>
 size_t
-levensthein(
-		const std::map<Key, T> &m0,
-		const std::map<Key, T> &m1)
+levensthein(const std::map<Key, T> &m0, const std::map<Key, T> &m1)
 {
 	return levensthein(m0.begin(), m0.end(), m1.begin(), m1.end());
 }
@@ -424,7 +407,8 @@ inline size_t
 levensthein(const char *a, const char *b)
 {
 	std::string str_a(a), str_b(b);
-	return levensthein(str_a.begin(), str_a.end(), str_b.begin(), str_b.end());
+	return levensthein(str_a.begin(), str_a.end(), str_b.begin(),
+	                   str_b.end());
 }
 
 
@@ -437,12 +421,11 @@ levensthein(const char *a, const char *b)
  */
 template <typename InputIt, class Compare>
 size_t
-hamming(
-		InputIt a_first, InputIt a_last,
-		InputIt b_first, InputIt b_last,
-		Compare cmp_equal)
+hamming(InputIt a_first, InputIt a_last, InputIt b_first, InputIt b_last,
+        Compare cmp_equal)
 {
-	// get the minimum length of both to avoid walking beyond iterator bounds
+	// get the minimum length of both to avoid walking beyond iterator
+	// bounds
 	typedef typename std::iterator_traits<InputIt>::difference_type diff_t;
 
 	diff_t len_a = std::distance(a_first, a_last);
@@ -450,8 +433,8 @@ hamming(
 	diff_t len   = min(len_a, len_b);
 
 	// default result is the difference of lengths
-	size_t dist = std::abs(len_a - len_b);
-	diff_t i = 0;
+	size_t dist  = std::abs(len_a - len_b);
+	diff_t i     = 0;
 	while (i < len) {
 		// compare elements, and add to length if different
 		if (!cmp_equal(*a_first, *b_first))
@@ -472,9 +455,7 @@ hamming(
  */
 template <typename InputIt>
 size_t
-hamming(
-		InputIt a_first, InputIt a_last,
-		InputIt b_first, InputIt b_last)
+hamming(InputIt a_first, InputIt a_last, InputIt b_first, InputIt b_last)
 {
 	typedef typename std::iterator_traits<InputIt>::value_type elem_type;
 	auto cmp_eq = [](elem_type left, elem_type right) {
@@ -489,13 +470,11 @@ hamming(
  *
  * Specialization for strings derived from std::basic_string
  */
-template <typename T,
-		 class Traits = std::char_traits<T>,
-		 class Allocator = std::allocator<T>>
+template <typename T, class Traits = std::char_traits<T>,
+          class Allocator = std::allocator<T>>
 size_t
-hamming(
-		const std::basic_string<T, Traits, Allocator> &a,
-		const std::basic_string<T, Traits, Allocator> &b)
+hamming(const std::basic_string<T, Traits, Allocator> &a,
+        const std::basic_string<T, Traits, Allocator> &b)
 {
 	return hamming(a.begin(), a.end(), b.begin(), b.end());
 }
@@ -508,9 +487,7 @@ hamming(
  */
 template <typename Key, typename T>
 size_t
-hamming(
-		const std::map<Key, T> &m0,
-		const std::map<Key, T> &m1)
+hamming(const std::map<Key, T> &m0, const std::map<Key, T> &m1)
 {
 	return hamming(m0.begin(), m0.end(), m1.begin(), m1.end());
 }
@@ -542,4 +519,4 @@ hamming(const char *a, const char *b)
 }
 
 
-} // ncr::
+} // namespace ncr
