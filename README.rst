@@ -166,6 +166,7 @@ They can be found in the folder `include/ncr/experimental`.
 
     ncr_glutils    - Utilities to work with OpenGL
     ncr_shader     - Shader stuff for OpenGL
+    ncr_strgen     - Given a basic alphabet, generate some strings from it
 
 
 Related ncr projects
