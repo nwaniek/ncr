@@ -78,7 +78,7 @@ the following (bibtex) snippet:
         author =   {Nicolai Waniek},
         title =    {{ncr}: {Neural and Natural Computation Repository}},
         howpublished = {\url{https://github.com/nwaniek/ncr}}
-        year = {2021--2023}
+        year = {2021--2024}
     }
 
 There might be a proper paper, which describes the software in detail, to cite
